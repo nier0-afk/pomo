@@ -289,13 +289,60 @@ function ring(){
 }
 function btns(sd,pd){document.getElementById('bs').disabled=sd;document.getElementById('bp').disabled=pd;}
 
+// ── Media Session API ──
+function updateMediaSession(){
+  if(!('mediaSession' in navigator)) return;
+  const note = document.getElementById('pnote').value.trim() || 'Sesión de dibujo';
+  const label = phase==='work' ? '🖊️ Dibujando' : '☕ Descanso';
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: fmt(secs),
+    artist: label,
+    album: note,
+    artwork: [
+      { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+      { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
+    ]
+  });
+  navigator.mediaSession.playbackState = running ? 'playing' : 'paused';
+}
+
+function setupMediaSession(){
+  if(!('mediaSession' in navigator)) return;
+  navigator.mediaSession.setActionHandler('play', ()=>{ tStart(); });
+  navigator.mediaSession.setActionHandler('pause', ()=>{ tPause(); });
+  navigator.mediaSession.setActionHandler('stop', ()=>{ tReset(); });
+}
+
+// Audio silencioso para mantener la sesión de media activa en background
+let silentAudio = null;
+function startSilentAudio(){
+  if(silentAudio) return;
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const buf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    src.connect(ctx.destination);
+    src.start();
+    silentAudio = src;
+  } catch(e){}
+}
+function stopSilentAudio(){
+  if(silentAudio){ try{ silentAudio.stop(); }catch(e){} silentAudio=null; }
+}
+
 function tStart(){
   if(running)return;
   running=true;btns(true,false);
   saveState();
+  startSilentAudio();
+  setupMediaSession();
+  updateMediaSession();
   tick=setInterval(()=>{
     secs--;
     ring();
+    updateMediaSession();
     if(secs%30===0)saveState();
     if(secs<=0){clearInterval(tick);running=false;phase==='work'?onWorkDone():onBreakDone();}
   },1000);
@@ -308,6 +355,7 @@ function tPause(){
   elapsedBeforePause=worked;
   document.getElementById('rlbl').textContent='pausado';
   saveState();
+  updateMediaSession();
 }
 
 function tReset(){
@@ -316,6 +364,8 @@ function tReset(){
   btns(false,true);
   ring();
   clearState();
+  stopSilentAudio();
+  if('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none';
 }
 
 function onWorkDone(){
