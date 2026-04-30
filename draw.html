@@ -4,15 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>1000 Horas de Dibujo</title>
-
-<!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#242124">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="1000hs Dibujo">
 <link rel="apple-touch-icon" href="icon-192.png">
-
+<script src="https://accounts.google.com/gsi/client" async></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -36,6 +34,20 @@ h1 { font-size:26px; font-weight:600; }
 .mc .l { font-size:11px; color:var(--td); text-transform:uppercase; letter-spacing:.06em; margin-bottom:5px; }
 .mc .v { font-size:20px; font-weight:600; color:var(--t); }
 .mc .u { font-size:12px; color:var(--tm); font-weight:400; }
+/* SYNC BAR */
+.sync-bar { display:flex; align-items:center; justify-content:space-between; background:var(--s1); border-radius:12px; padding:10px 14px; margin-bottom:1rem; border:1px solid var(--bd); gap:10px; flex-wrap:wrap; }
+.sync-info { display:flex; align-items:center; gap:8px; font-size:13px; }
+.sync-dot { width:8px; height:8px; border-radius:50%; background:var(--td); flex-shrink:0; }
+.sync-dot.ok { background:#6abf7b; }
+.sync-dot.busy { background:#c9a84c; animation:pulse .8s infinite alternate; }
+.sync-dot.err { background:#a05050; }
+@keyframes pulse { from{opacity:.4} to{opacity:1} }
+.sync-name { color:var(--tm); }
+.sync-time { font-size:11px; color:var(--td); }
+.sync-btns { display:flex; gap:6px; }
+.sbtn { padding:5px 12px; border-radius:7px; border:1px solid var(--bd); background:var(--s2); color:var(--gf); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+.sbtn:hover { background:var(--s3); border-color:var(--ac); }
+.sbtn.primary { background:var(--s3); border-color:var(--ac); }
 /* POMO */
 .ph { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
 .ph h2 { font-size:15px; font-weight:600; }
@@ -51,7 +63,6 @@ h1 { font-size:26px; font-weight:600; }
 .dots { display:flex; gap:7px; flex-wrap:wrap; justify-content:center; min-height:14px; }
 .dot { width:11px; height:11px; border-radius:50%; background:var(--s3); border:1px solid var(--bd); }
 .dot.done { background:var(--pr); border-color:var(--ac); }
-/* NOTE + TOPICS */
 .note-block { width:100%; max-width:360px; }
 .note-block label { font-size:12px; color:var(--tm); display:block; margin-bottom:5px; }
 .note-block input { width:100%; height:38px; padding:0 12px; border-radius:9px; border:1px solid var(--bd); background:var(--s2); color:var(--t); font-size:14px; }
@@ -72,7 +83,6 @@ h1 { font-size:26px; font-weight:600; }
 .chip .x { font-size:10px; color:var(--td); margin-left:2px; }
 .chip .x:hover { color:#a05050; }
 .no-topics { font-size:12px; color:var(--td); }
-/* BTNS */
 .pbtns { display:flex; gap:10px; }
 .btn { height:40px; padding:0 22px; border-radius:9px; border:1px solid var(--bd); font-size:14px; font-weight:600; cursor:pointer; }
 .btn:disabled { opacity:.3; cursor:default; }
@@ -80,17 +90,14 @@ h1 { font-size:26px; font-weight:600; }
 .btn-main:hover:not(:disabled) { background:var(--ac); }
 .btn-g { background:transparent; color:var(--tm); }
 .btn-g:hover:not(:disabled) { background:var(--s2); color:var(--t); }
-/* PARTIAL BANNER */
 .banner { display:none; background:var(--s3); border:1px solid var(--ac); border-radius:10px; padding:10px 14px; font-size:13px; color:var(--gf); margin-bottom:1rem; align-items:center; justify-content:space-between; gap:10px; }
 .banner.show { display:flex; }
 .banner-btns { display:flex; gap:8px; }
 .banner-btn { padding:4px 12px; border-radius:7px; border:1px solid var(--bd); background:var(--s2); color:var(--gf); font-size:12px; font-weight:600; cursor:pointer; }
 .banner-btn:hover { background:var(--ac); }
-/* INSTALL BANNER */
 .install-banner { display:none; background:var(--s3); border:1px solid var(--ac); border-radius:10px; padding:10px 14px; font-size:13px; color:var(--gf); margin-bottom:1rem; align-items:center; justify-content:space-between; gap:10px; }
 .install-banner.show { display:flex; }
 .install-banner button { padding:6px 14px; border-radius:7px; border:1px solid var(--ac); background:var(--pr); color:#242124; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; }
-/* FORM */
 .fc h2 { font-size:15px; font-weight:600; margin-bottom:1rem; }
 .form-row { display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; }
 .field { display:flex; flex-direction:column; gap:5px; }
@@ -101,7 +108,6 @@ h1 { font-size:26px; font-weight:600; }
 .field.n { width:80px; } .field.m { width:130px; } .field.w { flex:1; min-width:160px; }
 .btn-add { height:38px; padding:0 20px; border-radius:8px; border:1px solid var(--ac); background:var(--s3); color:var(--t); font-size:14px; font-weight:600; cursor:pointer; }
 .btn-add:hover { background:var(--ac); }
-/* HISTORY */
 .hc h2 { font-size:15px; font-weight:600; margin-bottom:1rem; }
 .slist { display:flex; flex-direction:column; gap:8px; max-height:340px; overflow-y:auto; }
 .si { display:flex; align-items:center; justify-content:space-between; background:var(--s2); border-radius:10px; padding:10px 14px; border:1px solid var(--bd); }
@@ -128,13 +134,29 @@ footer { text-align:center; font-size:12px; color:var(--td); margin-top:2rem; }
     <div class="badge" id="badge">0 días seguidos</div>
   </div>
 
-  <!-- BANNER instalar PWA -->
+  <!-- SYNC BAR -->
+  <div class="sync-bar">
+    <div class="sync-info">
+      <div class="sync-dot" id="sync-dot"></div>
+      <div>
+        <div id="sync-name" class="sync-name">No conectado a Google Drive</div>
+        <div id="sync-time" class="sync-time"></div>
+      </div>
+    </div>
+    <div class="sync-btns">
+      <button class="sbtn primary" id="sync-login-btn" onclick="gSignIn()">🔗 Conectar Drive</button>
+      <button class="sbtn" id="sync-now-btn" onclick="syncNow()" style="display:none">↑↓ Sincronizar</button>
+      <button class="sbtn" id="sync-logout-btn" onclick="gSignOut()" style="display:none">Desconectar</button>
+    </div>
+  </div>
+
+  <!-- INSTALL BANNER -->
   <div class="install-banner" id="install-banner">
     <span>📲 Instalá la app en tu celular para usarla sin internet</span>
     <button id="install-btn">Instalar</button>
   </div>
 
-  <!-- BANNER sesión interrumpida -->
+  <!-- PARTIAL BANNER -->
   <div class="banner" id="banner">
     <span id="banner-txt"></span>
     <div class="banner-btns">
@@ -174,25 +196,18 @@ footer { text-align:center; font-size:12px; color:var(--td); margin-top:2rem; }
           <div class="rl" id="rlbl">listo</div>
         </div>
       </div>
-
-      <!-- Nota del pomodoro -->
       <div class="note-block">
         <label>En qué estás trabajando</label>
         <input type="text" id="pnote" placeholder="Ej: figura humana, perspectiva...">
       </div>
-
-      <!-- Temas guardados -->
       <div class="topics-area">
-        <div class="topics-header">
-          <span>Temas guardados</span>
-        </div>
+        <div class="topics-header"><span>Temas guardados</span></div>
         <div class="topic-add-row">
-          <input type="text" id="topic-inp" placeholder="Ej: manos, bodegón, perspectiva..." onkeydown="if(event.key==='Enter')addTopic()">
+          <input type="text" id="topic-inp" placeholder="Ej: manos, bodegón..." onkeydown="if(event.key==='Enter')addTopic()">
           <button onclick="addTopic()">+ Guardar</button>
         </div>
         <div class="chips" id="chips"></div>
       </div>
-
       <div class="pbtns">
         <button class="btn btn-main" id="bs" onclick="tStart()">▶ Iniciar</button>
         <button class="btn btn-g" id="bp" onclick="tPause()" disabled>⏸ Pausar</button>
@@ -219,58 +234,196 @@ footer { text-align:center; font-size:12px; color:var(--td); margin-top:2rem; }
     <div class="slist" id="slist"></div>
   </div>
 
-  <footer>Datos guardados en tu dispositivo · funciona sin internet</footer>
+  <footer>Datos sincronizados con Google Drive · funciona sin internet</footer>
 </div>
 
 <script>
-// ── PWA: Service Worker ──
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
+// ─── CONFIG ───────────────────────────────────────────
+const CLIENT_ID = '1019273453050-n76ofnflcc9h6gct0o5189v0spjqfnon.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+const FILE_NAME = 'pomo1000hs.json';
 
-// ── PWA: Install prompt ──
+// ─── PWA ──────────────────────────────────────────────
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
   document.getElementById('install-banner').classList.add('show');
 });
 document.getElementById('install-btn').addEventListener('click', async () => {
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
+  await deferredPrompt.userChoice;
   deferredPrompt = null;
   document.getElementById('install-banner').classList.remove('show');
 });
-window.addEventListener('appinstalled', () => {
-  document.getElementById('install-banner').classList.remove('show');
-});
 
-// ── App ──
+// ─── GOOGLE DRIVE SYNC ────────────────────────────────
+let gToken = null;
+let driveFileId = null;
+let syncPending = false;
+let syncTimer = null;
+let userName = '';
+
+function setSyncStatus(state, msg, sub) {
+  const dot = document.getElementById('sync-dot');
+  dot.className = 'sync-dot' + (state === 'ok' ? ' ok' : state === 'busy' ? ' busy' : state === 'err' ? ' err' : '');
+  document.getElementById('sync-name').textContent = msg;
+  document.getElementById('sync-time').textContent = sub || '';
+}
+
+function gSignIn() {
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if (resp.error) { setSyncStatus('err', 'Error al conectar'); return; }
+      gToken = resp.access_token;
+      // get user info
+      try {
+        const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: 'Bearer ' + gToken }
+        });
+        const u = await r.json();
+        userName = u.name || u.email || 'Google';
+        localStorage.setItem('gUserName', userName);
+      } catch(e) { userName = 'Google'; }
+      localStorage.setItem('gToken', gToken);
+      onSignedIn();
+    }
+  });
+  client.requestAccessToken();
+}
+
+function gSignOut() {
+  gToken = null; driveFileId = null; userName = '';
+  localStorage.removeItem('gToken');
+  localStorage.removeItem('gFileId');
+  localStorage.removeItem('gUserName');
+  document.getElementById('sync-login-btn').style.display = '';
+  document.getElementById('sync-now-btn').style.display = 'none';
+  document.getElementById('sync-logout-btn').style.display = 'none';
+  setSyncStatus('', 'No conectado a Google Drive', '');
+}
+
+async function onSignedIn() {
+  document.getElementById('sync-login-btn').style.display = 'none';
+  document.getElementById('sync-now-btn').style.display = '';
+  document.getElementById('sync-logout-btn').style.display = '';
+  setSyncStatus('busy', 'Conectando con Drive...', '');
+  await findOrCreateFile();
+  await pullFromDrive();
+}
+
+async function driveReq(url, opts = {}) {
+  opts.headers = opts.headers || {};
+  opts.headers['Authorization'] = 'Bearer ' + gToken;
+  const r = await fetch(url, opts);
+  if (r.status === 401) { gSignOut(); throw new Error('Token expirado'); }
+  return r;
+}
+
+async function findOrCreateFile() {
+  // check cached id
+  const cached = localStorage.getItem('gFileId');
+  if (cached) { driveFileId = cached; return; }
+  // search in appDataFolder
+  const r = await driveReq(
+    `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D'${FILE_NAME}'&fields=files(id,name)`
+  );
+  const data = await r.json();
+  if (data.files && data.files.length > 0) {
+    driveFileId = data.files[0].id;
+  } else {
+    // create
+    const cr = await driveReq('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: FILE_NAME, parents: ['appDataFolder'] })
+    });
+    const cf = await cr.json();
+    driveFileId = cf.id;
+  }
+  localStorage.setItem('gFileId', driveFileId);
+}
+
+async function pullFromDrive() {
+  if (!gToken || !driveFileId) return;
+  setSyncStatus('busy', userName ? '☁️ ' + userName : 'Sincronizando...', 'Descargando datos...');
+  try {
+    const r = await driveReq(
+      `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`
+    );
+    if (r.status === 404) { await pushToDrive(); return; }
+    const text = await r.text();
+    if (!text || text.trim() === '') { await pushToDrive(); return; }
+    const remote = JSON.parse(text);
+    // merge: keep sessions with unique ids from both local and remote
+    const local = { sessions: loadS(), topics: loadTopics() };
+    const allSessions = [...local.sessions];
+    const localIds = new Set(local.sessions.map(s => s.id));
+    for (const s of (remote.sessions || [])) {
+      if (!localIds.has(s.id)) allSessions.push(s);
+    }
+    allSessions.sort((a, b) => b.id - a.id);
+    // topics: union
+    const allTopics = [...new Set([...local.topics, ...(remote.topics || [])])];
+    saveS(allSessions);
+    saveTopics(allTopics);
+    render(); renderTopics();
+    const now = new Date().toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'});
+    setSyncStatus('ok', '✅ ' + (userName || 'Google Drive'), 'Última sync: ' + now);
+    await pushToDrive(); // push merged data back
+  } catch(e) {
+    setSyncStatus('err', 'Error al sincronizar', e.message);
+  }
+}
+
+async function pushToDrive() {
+  if (!gToken || !driveFileId) return;
+  setSyncStatus('busy', userName ? '☁️ ' + userName : 'Guardando...', 'Subiendo datos...');
+  try {
+    const data = JSON.stringify({ sessions: loadS(), topics: loadTopics(), updated: Date.now() });
+    await driveReq(
+      `https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`,
+      { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: data }
+    );
+    const now = new Date().toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'});
+    setSyncStatus('ok', '✅ ' + (userName || 'Google Drive'), 'Última sync: ' + now);
+  } catch(e) {
+    setSyncStatus('err', 'Error al guardar', e.message);
+  }
+}
+
+function schedulePush() {
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => { if (gToken) pushToDrive(); }, 3000);
+}
+
+async function syncNow() {
+  if (!gToken) return;
+  await findOrCreateFile();
+  await pullFromDrive();
+}
+
+// ─── APP ──────────────────────────────────────────────
 const GOAL=1000, WS=3600, BS=600, CIRC=2*Math.PI*83;
 const END=new Date('2026-12-31T00:00:00');
 let phase='work', secs=WS, running=false, tick=null;
 let elapsedBeforePause=0;
-let sessionStartSecs=WS;
 
 function daysleft(){const t=new Date();t.setHours(0,0,0,0);return Math.max(Math.round((END-t)/86400000)+1,0);}
 function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
 function fmtm(m){const h=Math.floor(m/60),r=m%60;return h&&r?h+'h '+r+'m':h?h+'h':r+'m';}
 function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function loadS(){try{return JSON.parse(localStorage.getItem('ds')||'[]');}catch(e){return[];}}
-function saveS(a){localStorage.setItem('ds',JSON.stringify(a));}
+function saveS(a){localStorage.setItem('ds',JSON.stringify(a));schedulePush();}
 function loadTopics(){try{return JSON.parse(localStorage.getItem('dt')||'[]');}catch(e){return[];}}
-function saveTopics(a){localStorage.setItem('dt',JSON.stringify(a));}
+function saveTopics(a){localStorage.setItem('dt',JSON.stringify(a));schedulePush();}
 
-function saveState(){
-  localStorage.setItem('ts',JSON.stringify({
-    phase,secs,running,note:document.getElementById('pnote').value,elapsed:elapsedBeforePause
-  }));
-}
+function saveState(){localStorage.setItem('ts',JSON.stringify({phase,secs,running,note:document.getElementById('pnote').value,elapsed:elapsedBeforePause}));}
 function clearState(){localStorage.removeItem('ts');}
-function loadState(){
-  try{return JSON.parse(localStorage.getItem('ts')||'null');}catch(e){return null;}
-}
+function loadState(){try{return JSON.parse(localStorage.getItem('ts')||'null');}catch(e){return null;}}
 
 function beep(f,d,v){try{const c=new(window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;g.gain.setValueAtTime(v||.2,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}}
 function sfxD(){beep(880,.2);setTimeout(()=>beep(880,.2),280);setTimeout(()=>beep(1100,.4),560);}
@@ -289,104 +442,66 @@ function ring(){
 }
 function btns(sd,pd){document.getElementById('bs').disabled=sd;document.getElementById('bp').disabled=pd;}
 
-// ── Media Session API ──
+// Media Session
 function updateMediaSession(){
   if(!('mediaSession' in navigator)) return;
-  const note = document.getElementById('pnote').value.trim() || 'Sesión de dibujo';
-  const label = phase==='work' ? '🖊️ Dibujando' : '☕ Descanso';
-  navigator.mediaSession.metadata = new MediaMetadata({
-    title: fmt(secs),
-    artist: label,
-    album: note,
-    artwork: [
-      { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
-      { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
-    ]
+  const note=document.getElementById('pnote').value.trim()||'Sesión de dibujo';
+  navigator.mediaSession.metadata=new MediaMetadata({
+    title:fmt(secs), artist:phase==='work'?'🖊️ Dibujando':'☕ Descanso', album:note,
+    artwork:[{src:'icon-192.png',sizes:'192x192',type:'image/png'},{src:'icon-512.png',sizes:'512x512',type:'image/png'}]
   });
-  navigator.mediaSession.playbackState = running ? 'playing' : 'paused';
+  navigator.mediaSession.playbackState=running?'playing':'paused';
 }
-
 function setupMediaSession(){
   if(!('mediaSession' in navigator)) return;
-  navigator.mediaSession.setActionHandler('play', ()=>{ tStart(); });
-  navigator.mediaSession.setActionHandler('pause', ()=>{ tPause(); });
-  navigator.mediaSession.setActionHandler('stop', ()=>{ tReset(); });
+  navigator.mediaSession.setActionHandler('play',()=>tStart());
+  navigator.mediaSession.setActionHandler('pause',()=>tPause());
+  navigator.mediaSession.setActionHandler('stop',()=>tReset());
 }
-
-// Audio silencioso para mantener la sesión de media activa en background
-let silentAudio = null;
+let silentAudio=null;
 function startSilentAudio(){
-  if(silentAudio) return;
-  try {
-    const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    const buf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    src.loop = true;
-    src.connect(ctx.destination);
-    src.start();
-    silentAudio = src;
-  } catch(e){}
+  if(silentAudio)return;
+  try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const buf=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate);const src=ctx.createBufferSource();src.buffer=buf;src.loop=true;src.connect(ctx.destination);src.start();silentAudio=src;}catch(e){}
 }
-function stopSilentAudio(){
-  if(silentAudio){ try{ silentAudio.stop(); }catch(e){} silentAudio=null; }
-}
+function stopSilentAudio(){if(silentAudio){try{silentAudio.stop();}catch(e){}silentAudio=null;}}
 
 function tStart(){
   if(running)return;
-  running=true;btns(true,false);
-  saveState();
-  startSilentAudio();
-  setupMediaSession();
-  updateMediaSession();
+  running=true;btns(true,false);saveState();
+  startSilentAudio();setupMediaSession();updateMediaSession();
   tick=setInterval(()=>{
-    secs--;
-    ring();
-    updateMediaSession();
+    secs--;ring();updateMediaSession();
     if(secs%30===0)saveState();
     if(secs<=0){clearInterval(tick);running=false;phase==='work'?onWorkDone():onBreakDone();}
   },1000);
 }
-
 function tPause(){
   if(!running)return;
   clearInterval(tick);running=false;btns(false,true);
-  const worked=Math.floor((WS-secs)/60);
-  elapsedBeforePause=worked;
+  elapsedBeforePause=Math.floor((WS-secs)/60);
   document.getElementById('rlbl').textContent='pausado';
-  saveState();
-  updateMediaSession();
+  saveState();updateMediaSession();
 }
-
 function tReset(){
-  clearInterval(tick);running=false;
-  phase='work';secs=WS;elapsedBeforePause=0;
-  btns(false,true);
-  ring();
-  clearState();
-  stopSilentAudio();
-  if('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none';
+  clearInterval(tick);running=false;phase='work';secs=WS;elapsedBeforePause=0;
+  btns(false,true);ring();clearState();stopSilentAudio();
+  if('mediaSession' in navigator)navigator.mediaSession.playbackState='none';
 }
-
 function onWorkDone(){
   sfxD();
   const note=document.getElementById('pnote').value.trim()||'Pomodoro completado ✓';
   const arr=loadS();
   arr.unshift({id:Date.now(),date:today(),mins:60,note,pomo:true,partial:false});
-  saveS(arr);render();
-  clearState();
+  saveS(arr);render();clearState();
   document.getElementById('rtime').textContent='✓';
   document.getElementById('rlbl').textContent='completado';
   btns(true,true);
   setTimeout(()=>{phase='break';secs=BS;ring();btns(false,true);tStart();},2200);
 }
-
-function onBreakDone(){
-  sfxB();phase='work';secs=WS;elapsedBeforePause=0;ring();btns(false,true);clearState();
-}
+function onBreakDone(){sfxB();phase='work';secs=WS;elapsedBeforePause=0;ring();btns(false,true);clearState();}
 
 window.addEventListener('beforeunload',()=>{
-  if(phase==='work' && secs<WS){
+  if(phase==='work'&&secs<WS){
     const worked=Math.floor((WS-secs)/60);
     const total=elapsedBeforePause+worked;
     if(total>=1){
@@ -400,25 +515,19 @@ window.addEventListener('beforeunload',()=>{
 });
 
 function checkSavedState(){
-  const st=loadState();
-  if(!st)return;
+  const st=loadState();if(!st)return;
   if(st.phase==='work'&&st.secs<WS){
     const worked=Math.floor((WS-st.secs)/60);
     if(worked>=1){
-      secs=st.secs;
-      phase=st.phase;
-      elapsedBeforePause=st.elapsed||0;
+      secs=st.secs;phase=st.phase;elapsedBeforePause=st.elapsed||0;
       document.getElementById('pnote').value=st.note||'';
       ring();btns(false,true);
-      const b=document.getElementById('banner');
-      document.getElementById('banner-txt').textContent=
-        `Tenías ${worked} min trabajados en "${st.note||'esta sesión'}". ¿Guardarlos?`;
-      b.classList.add('show');
+      document.getElementById('banner-txt').textContent=`Tenías ${worked} min trabajados en "${st.note||'esta sesión'}". ¿Guardarlos?`;
+      document.getElementById('banner').classList.add('show');
     }
   }
   clearState();
 }
-
 function bannerSave(){
   const worked=Math.floor((WS-secs)/60)+elapsedBeforePause;
   const note=document.getElementById('pnote').value.trim()||'Sesión de dibujo';
@@ -427,37 +536,20 @@ function bannerSave(){
   saveS(arr);render();
   document.getElementById('banner').classList.remove('show');
 }
-function bannerDismiss(){
-  document.getElementById('banner').classList.remove('show');
-  tReset();
-}
+function bannerDismiss(){document.getElementById('banner').classList.remove('show');tReset();}
 
 function addTopic(){
-  const inp=document.getElementById('topic-inp');
-  const v=inp.value.trim();
-  if(!v)return;
-  const arr=loadTopics();
-  if(!arr.includes(v)){arr.push(v);saveTopics(arr);}
-  inp.value='';
-  renderTopics();
+  const inp=document.getElementById('topic-inp');const v=inp.value.trim();if(!v)return;
+  const arr=loadTopics();if(!arr.includes(v)){arr.push(v);saveTopics(arr);}
+  inp.value='';renderTopics();
 }
-function deleteTopic(t){
-  saveTopics(loadTopics().filter(x=>x!==t));
-  renderTopics();
-}
-function selectTopic(t){
-  document.getElementById('pnote').value=t;
-}
+function deleteTopic(t){saveTopics(loadTopics().filter(x=>x!==t));renderTopics();}
+function selectTopic(t){document.getElementById('pnote').value=t;}
 function renderTopics(){
-  const arr=loadTopics();
-  const el=document.getElementById('chips');
+  const arr=loadTopics();const el=document.getElementById('chips');
   if(!arr.length){el.innerHTML='<span class="no-topics">No hay temas guardados</span>';return;}
-  el.innerHTML=arr.map(t=>`
-    <div class="chip" onclick="selectTopic('${t.replace(/'/g,"\\'")}')">
-      ${t}
-      <span class="x" onclick="event.stopPropagation();deleteTopic('${t.replace(/'/g,"\\'")}')">✕</span>
-    </div>
-  `).join('');
+  el.innerHTML=arr.map(t=>`<div class="chip" onclick="selectTopic('${t.replace(/'/g,"\\'")}')">
+    ${t}<span class="x" onclick="event.stopPropagation();deleteTopic('${t.replace(/'/g,"\\'")}')">✕</span></div>`).join('');
 }
 
 function addManual(){
@@ -503,8 +595,7 @@ function render(){
     <div class="mc"><div class="l">Registradas</div><div class="v">${th.toFixed(1)}<span class="u"> hs</span></div></div>
     <div class="mc"><div class="l">Restantes</div><div class="v">${rem.toFixed(1)}<span class="u"> hs</span></div></div>
     <div class="mc"><div class="l">Días restantes</div><div class="v">${dl}</div></div>
-    <div class="mc"><div class="l">Necesitás/día</div><div class="v" style="font-size:17px">${dl>0?nh+'h '+nm+'m':'¡Meta!'}</div></div>
-  `;
+    <div class="mc"><div class="l">Necesitás/día</div><div class="v" style="font-size:17px">${dl>0?nh+'h '+nm+'m':'¡Meta!'}</div></div>`;
   document.getElementById('ptoday').textContent=tp===1?'1 pomodoro hoy':tp+' pomodoros hoy';
   document.getElementById('pdots').innerHTML=Array.from({length:Math.min(tp,10)},()=>'<div class="dot done"></div>').join('');
   const list=document.getElementById('slist');
@@ -517,8 +608,18 @@ function render(){
   }).join('');
 }
 
+// ─── INIT ─────────────────────────────────────────────
 document.getElementById('id').value=today();
 ring();renderTopics();checkSavedState();render();
+
+// Auto-restore session if token cached (best effort)
+window.addEventListener('load', () => {
+  const cachedName = localStorage.getItem('gUserName');
+  if (cachedName) {
+    userName = cachedName;
+    setSyncStatus('', '🔄 Reconectando...', 'Tocá "Conectar Drive" para reconectar');
+  }
+});
 </script>
 </body>
 </html>
