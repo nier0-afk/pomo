@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>draKengard</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#242124">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="1000hs Dibujo">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script src="https://accounts.google.com/gsi/client" async></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#242124; --s1:#2e2a2e; --s2:#383438; --s3:#443e44;
+  --bd:#4c464c; --t:#edebed; --tm:#9b929b; --td:#615961;
+  --ac:#7b717b; --pr:#cac5ca; --gf:#d6d2d6;
+}
+body { font-family:system-ui,sans-serif; background:var(--bg); color:var(--t); min-height:100vh; padding:2rem 1rem; }
+.wrap { max-width:680px; margin:0 auto; }
+.card { background:var(--s1); border-radius:0; padding:1.25rem 1.5rem; margin-bottom:1rem; border:1px solid var(--bd); }
+h1 { font-size:26px; font-weight:600; }
+.sub { color:var(--tm); font-size:14px; margin-top:3px; }
+.badge { display:inline-flex; align-items:center; background:var(--s2); color:var(--tm); font-size:12px; font-weight:600; padding:4px 12px; border-radius:0; margin-top:6px; border:1px solid var(--bd); }
+.badge.on { background:var(--s3); color:var(--gf); border-color:var(--ac); }
+.prog-bg { background:var(--s3); border-radius:0; height:10px; overflow:hidden; margin:.6rem 0; }
+.prog-fill { height:10px; border-radius:0; background:var(--pr); transition:width .5s; }
+.row2 { display:flex; justify-content:space-between; font-size:13px; color:var(--tm); }
+.metrics { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:1rem; }
+@media(min-width:500px){.metrics{grid-template-columns:repeat(4,1fr);}}
+.mc { background:var(--s1); border-radius:0; padding:1rem; border:1px solid var(--bd); }
+.mc .l { font-size:11px; color:var(--td); text-transform:uppercase; letter-spacing:.06em; margin-bottom:5px; }
+.mc .v { font-size:20px; font-weight:600; color:var(--t); }
+.mc .u { font-size:12px; color:var(--tm); font-weight:400; }
+/* SYNC BAR */
+.sync-bar { display:flex; align-items:center; justify-content:space-between; background:var(--s1); border-radius:0; padding:10px 14px; margin-bottom:1rem; border:1px solid var(--bd); gap:10px; flex-wrap:wrap; }
+.sync-info { display:flex; align-items:center; gap:8px; font-size:13px; }
+.sync-dot { width:8px; height:8px; border-radius:50%; background:var(--td); flex-shrink:0; }
+.sync-dot.ok { background:#6abf7b; }
+.sync-dot.busy { background:#c9a84c; animation:pulse .8s infinite alternate; }
+.sync-dot.err { background:#a05050; }
+@keyframes pulse { from{opacity:.4} to{opacity:1} }
+.sync-name { color:var(--tm); }
+.sync-time { font-size:11px; color:var(--td); }
+.sync-btns { display:flex; gap:6px; }
+.sbtn { padding:5px 12px; border-radius:0; border:1px solid var(--bd); background:var(--s2); color:var(--gf); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+.sbtn:hover { background:var(--s3); border-color:var(--ac); }
+.sbtn.primary { background:var(--s3); border-color:var(--ac); }
+/* POMO */
+.ph { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+.ph h2 { font-size:15px; font-weight:600; }
+.ptoday { font-size:12px; color:var(--tm); }
+.pbody { display:flex; flex-direction:column; align-items:center; gap:1.2rem; }
+.ring-wrap { position:relative; width:190px; height:190px; }
+.ring-wrap svg { transform:rotate(-90deg); }
+.rbg { fill:none; stroke:var(--s3); stroke-width:12; }
+.rfg { fill:none; stroke-width:12; stroke-linecap:round; transition:stroke-dashoffset 1s linear,stroke .5s; }
+.rc { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; pointer-events:none; }
+.rt { font-size:38px; font-weight:600; letter-spacing:1px; transition:color .4s; color:var(--t); }
+.rl { font-size:11px; color:var(--td); text-transform:uppercase; letter-spacing:.07em; margin-top:3px; }
+.dots { display:flex; gap:7px; flex-wrap:wrap; justify-content:center; min-height:14px; }
+.dot { width:11px; height:11px; border-radius:50%; background:var(--s3); border:1px solid var(--bd); }
+.dot.done { background:var(--pr); border-color:var(--ac); }
+.note-block { width:100%; max-width:360px; }
+.note-block label { font-size:12px; color:var(--tm); display:block; margin-bottom:5px; }
+.note-block input { width:100%; height:38px; padding:0 12px; border-radius:0; border:1px solid var(--bd); background:var(--s2); color:var(--t); font-size:14px; }
+.note-block input::placeholder { color:var(--td); }
+.note-block input:focus { outline:none; border-color:var(--ac); }
+.topics-area { width:100%; max-width:360px; }
+.topics-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.topics-header span { font-size:12px; color:var(--tm); }
+.topic-add-row { display:flex; gap:6px; margin-bottom:8px; }
+.topic-add-row input { flex:1; height:32px; padding:0 10px; border-radius:0; border:1px solid var(--bd); background:var(--s2); color:var(--t); font-size:13px; }
+.topic-add-row input::placeholder { color:var(--td); }
+.topic-add-row input:focus { outline:none; border-color:var(--ac); }
+.topic-add-row button { height:32px; padding:0 12px; border-radius:0; border:1px solid var(--ac); background:var(--s3); color:var(--t); font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
+.topic-add-row button:hover { background:var(--ac); }
+.chips { display:flex; flex-wrap:wrap; gap:6px; }
+.chip { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:0; background:var(--s2); border:1px solid var(--bd); font-size:12px; color:var(--tm); cursor:pointer; }
+.chip:hover { border-color:var(--ac); color:var(--gf); }
+.chip .x { font-size:10px; color:var(--td); margin-left:2px; }
+.chip .x:hover { color:#a05050; }
+.no-topics { font-size:12px; color:var(--td); }
+.pbtns { display:flex; gap:10px; }
+.btn { height:40px; padding:0 22px; border-radius:0; border:1px solid var(--bd); font-size:14px; font-weight:600; cursor:pointer; }
+.btn:disabled { opacity:.3; cursor:default; }
+.btn-main { background:var(--s3); color:var(--t); border-color:var(--ac); }
+.btn-main:hover:not(:disabled) { background:var(--ac); }
+.btn-g { background:transparent; color:var(--tm); }
+.btn-g:hover:not(:disabled) { background:var(--s2); color:var(--t); }
+.banner { display:none; background:var(--s3); border:1px solid var(--ac); border-radius:0; padding:10px 14px; font-size:13px; color:var(--gf); margin-bottom:1rem; align-items:center; justify-content:space-between; gap:10px; }
+.banner.show { display:flex; }
+.banner-btns { display:flex; gap:8px; }
+.banner-btn { padding:4px 12px; border-radius:0; border:1px solid var(--bd); background:var(--s2); color:var(--gf); font-size:12px; font-weight:600; cursor:pointer; }
+.banner-btn:hover { background:var(--ac); }
+.install-banner { display:none; background:var(--s3); border:1px solid var(--ac); border-radius:0; padding:10px 14px; font-size:13px; color:var(--gf); margin-bottom:1rem; align-items:center; justify-content:space-between; gap:10px; }
+.install-banner.show { display:flex; }
+.install-banner button { padding:6px 14px; border-radius:0; border:1px solid var(--ac); background:var(--pr); color:#242124; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; }
+.fc h2 { font-size:15px; font-weight:600; margin-bottom:1rem; }
+.form-row { display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; }
+.field { display:flex; flex-direction:column; gap:5px; }
+.field label { font-size:12px; color:var(--tm); }
+.field input { height:38px; padding:0 10px; border-radius:0; border:1px solid var(--bd); background:var(--s2); color:var(--t); font-size:14px; }
+.field input::placeholder { color:var(--td); }
+.field input:focus { outline:none; border-color:var(--ac); }
+.field.n { width:80px; } .field.m { width:130px; } .field.w { flex:1; min-width:160px; }
+.btn-add { height:38px; padding:0 20px; border-radius:0; border:1px solid var(--ac); background:var(--s3); color:var(--t); font-size:14px; font-weight:600; cursor:pointer; }
+.btn-add:hover { background:var(--ac); }
+.hc h2 { font-size:15px; font-weight:600; margin-bottom:1rem; }
+.slist { display:flex; flex-direction:column; gap:8px; max-height:340px; overflow-y:auto; }
+.si { display:flex; align-items:center; justify-content:space-between; background:var(--s2); border-radius:0; padding:10px 14px; border:1px solid var(--bd); }
+.sdate { font-size:12px; color:var(--td); }
+.snote { font-size:14px; color:var(--tm); margin-top:2px; }
+.sr { display:flex; align-items:center; gap:8px; }
+.sdur { font-weight:600; font-size:15px; color:var(--t); }
+.tag { font-size:11px; padding:2px 9px; border-radius:0; font-weight:600; border:1px solid var(--bd); }
+.tag-p { background:var(--s3); color:var(--gf); border-color:var(--ac); }
+.tag-m { background:var(--s2); color:var(--tm); }
+.tag-x { background:var(--s2); color:var(--td); font-style:italic; }
+.bdel { background:none; border:1px solid var(--bd); border-radius:0; color:var(--td); font-size:13px; padding:2px 8px; cursor:pointer; }
+.bdel:hover { color:#a05050; border-color:#a05050; }
+.empty { color:var(--td); font-size:14px; text-align:center; padding:2rem; }
+footer { text-align:center; font-size:12px; color:var(--td); margin-top:2rem; }
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--s1)}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div style="margin-bottom:1.5rem">
+    <h1>🖊️ 1000 horas de dibujo</h1>
+    <p class="sub">Meta: 31 de diciembre de 2026</p>
+    <div class="badge" id="badge">0 días seguidos</div>
+  </div>
+
+  <!-- SYNC BAR -->
+  <div class="sync-bar">
+    <div class="sync-info">
+      <div class="sync-dot" id="sync-dot"></div>
+      <div>
+        <div id="sync-name" class="sync-name">No conectado a Google Drive</div>
+        <div id="sync-time" class="sync-time"></div>
+      </div>
+    </div>
+    <div class="sync-btns">
+      <button class="sbtn primary" id="sync-login-btn" onclick="gSignIn()">🔗 Conectar Drive</button>
+      <button class="sbtn" id="sync-now-btn" onclick="syncNow()" style="display:none">↑↓ Sincronizar</button>
+      <button class="sbtn" id="sync-logout-btn" onclick="gSignOut()" style="display:none">Desconectar</button>
+    </div>
+  </div>
+
+  <!-- INSTALL BANNER -->
+  <div class="install-banner" id="install-banner">
+    <span>📲 Instalá la app en tu celular para usarla sin internet</span>
+    <button id="install-btn">Instalar</button>
+  </div>
+
+  <!-- PARTIAL BANNER -->
+  <div class="banner" id="banner">
+    <span id="banner-txt"></span>
+    <div class="banner-btns">
+      <button class="banner-btn" onclick="bannerSave()">Guardar</button>
+      <button class="banner-btn" onclick="bannerDismiss()">Descartar</button>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="card">
+    <div class="row2">
+      <span id="pct" style="font-weight:600;font-size:15px;color:var(--t)">0%</span>
+      <span id="logged">0 / 1000 hs</span>
+    </div>
+    <div class="prog-bg"><div class="prog-fill" id="bar" style="width:0%"></div></div>
+    <div class="row2"><span>29 abr 2026</span><span>31 dic 2026</span></div>
+  </div>
+
+  <div class="metrics" id="metrics"></div>
+
+  <!-- POMODORO -->
+  <div class="card">
+    <div class="ph">
+      <h2>Pomodoro</h2>
+      <span class="ptoday" id="ptoday">0 pomodoros hoy</span>
+    </div>
+    <!-- Barra diaria -->
+    <div style="margin-bottom:1.2rem">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tm);margin-bottom:4px">
+        <span>Hoy</span>
+        <span id="daily-label">0h / 0h necesarias</span>
+      </div>
+      <div class="prog-bg"><div class="prog-fill" id="daily-bar" style="width:0%;background:var(--ac)"></div></div>
+    </div>
+    <div class="pbody">
+      <div class="dots" id="pdots"></div>
+      <div class="ring-wrap">
+        <svg width="190" height="190" viewBox="0 0 190 190">
+          <circle class="rbg" cx="95" cy="95" r="83"/>
+          <circle class="rfg" id="rfg" cx="95" cy="95" r="83"
+            stroke="#cac5ca" stroke-dasharray="521.50" stroke-dashoffset="0"/>
+        </svg>
+        <div class="rc">
+          <div class="rt" id="rtime">60:00</div>
+          <div class="rl" id="rlbl">listo</div>
+        </div>
+      </div>
+      <div class="note-block">
+        <label>En qué estás trabajando</label>
+        <input type="text" id="pnote" placeholder="Ej: figura humana, perspectiva...">
+      </div>
+      <div class="topics-area">
+        <div class="topics-header"><span>Temas guardados</span></div>
+        <div class="topic-add-row">
+          <input type="text" id="topic-inp" placeholder="Ej: manos, bodegón..." onkeydown="if(event.key==='Enter')addTopic()">
+          <button onclick="addTopic()">+ Guardar</button>
+        </div>
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="pbtns">
+        <button class="btn btn-main" id="bs" onclick="tStart()">▶ Iniciar</button>
+        <button class="btn btn-g" id="bp" onclick="tPause()" disabled>⏸ Pausar</button>
+        <button class="btn btn-g" onclick="tReset()">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="card hc">
+    <h2>Historial</h2>
+    <div class="slist" id="slist"></div>
+  </div>
+
+  <footer>Datos sincronizados con Google Drive · funciona sin internet</footer>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────
+const CLIENT_ID = '1019273453050-n76ofnflcc9h6gct0o5189v0spjqfnon.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+const FILE_NAME = 'pomo1000hs.json';
+
+// ─── PWA ──────────────────────────────────────────────
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('install-banner').classList.add('show');
+});
+document.getElementById('install-btn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('install-banner').classList.remove('show');
+});
+
+// ─── GOOGLE DRIVE SYNC ────────────────────────────────
+let gToken = null;
+let driveFileId = null;
+let syncPending = false;
+let syncTimer = null;
+let userName = '';
+
+function setSyncStatus(state, msg, sub) {
+  const dot = document.getElementById('sync-dot');
+  dot.className = 'sync-dot' + (state === 'ok' ? ' ok' : state === 'busy' ? ' busy' : state === 'err' ? ' err' : '');
+  document.getElementById('sync-name').textContent = msg;
+  document.getElementById('sync-time').textContent = sub || '';
+}
+
+function gSignIn() {
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if (resp.error) { setSyncStatus('err', 'Error al conectar'); return; }
+      gToken = resp.access_token;
+      // get user info
+      try {
+        const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: 'Bearer ' + gToken }
+        });
+        const u = await r.json();
+        userName = u.name || u.email || 'Google';
+        localStorage.setItem('gUserName', userName);
+      } catch(e) { userName = 'Google'; }
+      localStorage.setItem('gToken', gToken);
+      onSignedIn();
+    }
+  });
+  client.requestAccessToken();
+}
+
+function gSignOut() {
+  gToken = null; driveFileId = null; userName = '';
+  localStorage.removeItem('gToken');
+  localStorage.removeItem('gFileId');
+  localStorage.removeItem('gUserName');
+  document.getElementById('sync-login-btn').style.display = '';
+  document.getElementById('sync-now-btn').style.display = 'none';
+  document.getElementById('sync-logout-btn').style.display = 'none';
+  setSyncStatus('', 'No conectado a Google Drive', '');
+}
+
+async function onSignedIn() {
+  document.getElementById('sync-login-btn').style.display = 'none';
+  document.getElementById('sync-now-btn').style.display = '';
+  document.getElementById('sync-logout-btn').style.display = '';
+  setSyncStatus('busy', 'Conectando con Drive...', '');
+  await findOrCreateFile();
+  await pullFromDrive();
+}
+
+async function driveReq(url, opts = {}) {
+  opts.headers = opts.headers || {};
+  opts.headers['Authorization'] = 'Bearer ' + gToken;
+  const r = await fetch(url, opts);
+  if (r.status === 401) { gSignOut(); throw new Error('Token expirado'); }
+  return r;
+}
+
+async function findOrCreateFile() {
+  // check cached id
+  const cached = localStorage.getItem('gFileId');
+  if (cached) { driveFileId = cached; return; }
+  // search in appDataFolder
+  const r = await driveReq(
+    `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D'${FILE_NAME}'&fields=files(id,name)`
+  );
+  const data = await r.json();
+  if (data.files && data.files.length > 0) {
+    driveFileId = data.files[0].id;
+  } else {
+    // create
+    const cr = await driveReq('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: FILE_NAME, parents: ['appDataFolder'] })
+    });
+    const cf = await cr.json();
+    driveFileId = cf.id;
+  }
+  localStorage.setItem('gFileId', driveFileId);
+}
+
+async function pullFromDrive() {
+  if (!gToken || !driveFileId) return;
+  setSyncStatus('busy', userName ? '☁️ ' + userName : 'Sincronizando...', 'Descargando datos...');
+  try {
+    const r = await driveReq(
+      `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`
+    );
+    if (r.status === 404) { await pushToDrive(); return; }
+    const text = await r.text();
+    if (!text || text.trim() === '') { await pushToDrive(); return; }
+    const remote = JSON.parse(text);
+    // merge: keep sessions with unique ids from both local and remote
+    const local = { sessions: loadS(), topics: loadTopics() };
+    const allSessions = [...local.sessions];
+    const localIds = new Set(local.sessions.map(s => s.id));
+    for (const s of (remote.sessions || [])) {
+      if (!localIds.has(s.id)) allSessions.push(s);
+    }
+    allSessions.sort((a, b) => b.id - a.id);
+    // topics: union
+    const allTopics = [...new Set([...local.topics, ...(remote.topics || [])])];
+    saveS(allSessions);
+    saveTopics(allTopics);
+    render(); renderTopics();
+    const now = new Date().toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'});
+    setSyncStatus('ok', '✅ ' + (userName || 'Google Drive'), 'Última sync: ' + now);
+    await pushToDrive(); // push merged data back
+  } catch(e) {
+    setSyncStatus('err', 'Error al sincronizar', e.message);
+  }
+}
+
+async function pushToDrive() {
+  if (!gToken || !driveFileId) return;
+  setSyncStatus('busy', userName ? '☁️ ' + userName : 'Guardando...', 'Subiendo datos...');
+  try {
+    const data = JSON.stringify({ sessions: loadS(), topics: loadTopics(), updated: Date.now() });
+    await driveReq(
+      `https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`,
+      { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: data }
+    );
+    const now = new Date().toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'});
+    setSyncStatus('ok', '✅ ' + (userName || 'Google Drive'), 'Última sync: ' + now);
+  } catch(e) {
+    setSyncStatus('err', 'Error al guardar', e.message);
+  }
+}
+
+function schedulePush() {
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => { if (gToken) pushToDrive(); }, 3000);
+}
+
+async function syncNow() {
+  if (!gToken) return;
+  await findOrCreateFile();
+  await pullFromDrive();
+}
+
+// ─── APP ──────────────────────────────────────────────
+const GOAL=1000, WS=3600, BS=600, CIRC=2*Math.PI*83;
+const END=new Date('2026-12-31T00:00:00');
+let phase='work', secs=WS, running=false, tick=null;
+let elapsedBeforePause=0;
+
+function daysleft(){const t=new Date();t.setHours(0,0,0,0);return Math.max(Math.round((END-t)/86400000)+1,0);}
+function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+function fmtm(m){const h=Math.floor(m/60),r=m%60;return h&&r?h+'h '+r+'m':h?h+'h':r+'m';}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function loadS(){try{return JSON.parse(localStorage.getItem('ds')||'[]');}catch(e){return[];}}
+function saveS(a){localStorage.setItem('ds',JSON.stringify(a));schedulePush();}
+function loadTopics(){try{return JSON.parse(localStorage.getItem('dt')||'[]');}catch(e){return[];}}
+function saveTopics(a){localStorage.setItem('dt',JSON.stringify(a));schedulePush();}
+
+function saveState(){localStorage.setItem('ts',JSON.stringify({phase,secs,running,note:document.getElementById('pnote').value,elapsed:elapsedBeforePause}));}
+function clearState(){localStorage.removeItem('ts');}
+function loadState(){try{return JSON.parse(localStorage.getItem('ts')||'null');}catch(e){return null;}}
+
+function beep(f,d,v){try{const c=new(window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;g.gain.setValueAtTime(v||.2,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}}
+function sfxD(){beep(880,.2);setTimeout(()=>beep(880,.2),280);setTimeout(()=>beep(1100,.4),560);}
+function sfxB(){beep(550,.3);setTimeout(()=>beep(660,.3),320);}
+
+function ring(){
+  const total=phase==='work'?WS:BS;
+  document.getElementById('rfg').style.strokeDashoffset=CIRC*(1-secs/total);
+  document.getElementById('rfg').style.stroke=phase==='work'?'#cac5ca':'#7b717b';
+  document.getElementById('rtime').textContent=secs>0?fmt(secs):'✓';
+  document.getElementById('rtime').style.color=phase==='break'?'#9b929b':'var(--t)';
+  document.getElementById('rlbl').textContent=
+    !running&&secs===(phase==='work'?WS:BS)?'listo':
+    running&&phase==='work'?'dibujando':
+    running&&phase==='break'?'descanso':'pausado';
+}
+function btns(sd,pd){document.getElementById('bs').disabled=sd;document.getElementById('bp').disabled=pd;}
+
+// Media Session
+function updateMediaSession(){
+  if(!('mediaSession' in navigator)) return;
+  const note=document.getElementById('pnote').value.trim()||'Sesión de dibujo';
+  navigator.mediaSession.metadata=new MediaMetadata({
+    title:fmt(secs), artist:phase==='work'?'🖊️ Dibujando':'☕ Descanso', album:note,
+    artwork:[{src:'icon-192.png',sizes:'192x192',type:'image/png'},{src:'icon-512.png',sizes:'512x512',type:'image/png'}]
+  });
+  navigator.mediaSession.playbackState=running?'playing':'paused';
+}
+function setupMediaSession(){
+  if(!('mediaSession' in navigator)) return;
+  navigator.mediaSession.setActionHandler('play',()=>tStart());
+  navigator.mediaSession.setActionHandler('pause',()=>tPause());
+  navigator.mediaSession.setActionHandler('stop',()=>tReset());
+}
+let silentAudio=null;
+function startSilentAudio(){
+  if(silentAudio)return;
+  try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const buf=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate);const src=ctx.createBufferSource();src.buffer=buf;src.loop=true;src.connect(ctx.destination);src.start();silentAudio=src;}catch(e){}
+}
+function stopSilentAudio(){if(silentAudio){try{silentAudio.stop();}catch(e){}silentAudio=null;}}
+
+function tStart(){
+  if(running)return;
+  running=true;btns(true,false);saveState();
+  startSilentAudio();setupMediaSession();updateMediaSession();
+  tick=setInterval(()=>{
+    secs--;ring();updateMediaSession();
+    if(secs%30===0)saveState();
+    if(secs<=0){clearInterval(tick);running=false;phase==='work'?onWorkDone():onBreakDone();}
+  },1000);
+}
+function tPause(){
+  if(!running)return;
+  clearInterval(tick);running=false;btns(false,true);
+  elapsedBeforePause=Math.floor((WS-secs)/60);
+  document.getElementById('rlbl').textContent='pausado';
+  saveState();updateMediaSession();
+}
+function tReset(){
+  clearInterval(tick);running=false;phase='work';secs=WS;elapsedBeforePause=0;
+  btns(false,true);ring();clearState();stopSilentAudio();
+  if('mediaSession' in navigator)navigator.mediaSession.playbackState='none';
+}
+function onWorkDone(){
+  sfxD();
+  const note=document.getElementById('pnote').value.trim()||'Pomodoro completado ✓';
+  const arr=loadS();
+  arr.unshift({id:Date.now(),date:today(),mins:60,note,pomo:true,partial:false});
+  saveS(arr);render();clearState();
+  document.getElementById('rtime').textContent='✓';
+  document.getElementById('rlbl').textContent='completado';
+  btns(true,true);
+  setTimeout(()=>{phase='break';secs=BS;ring();btns(false,true);tStart();},2200);
+}
+function onBreakDone(){sfxB();phase='work';secs=WS;elapsedBeforePause=0;ring();btns(false,true);clearState();}
+
+window.addEventListener('beforeunload',()=>{
+  if(phase==='work'&&secs<WS){
+    const worked=Math.floor((WS-secs)/60);
+    const total=elapsedBeforePause+worked;
+    if(total>=1){
+      const note=document.getElementById('pnote').value.trim()||'Sesión de dibujo';
+      const arr=loadS();
+      arr.unshift({id:Date.now(),date:today(),mins:total,note:note+' (parcial)',pomo:true,partial:true});
+      saveS(arr);
+    }
+  }
+  clearState();
+});
+
+function checkSavedState(){
+  const st=loadState();if(!st)return;
+  if(st.phase==='work'&&st.secs<WS){
+    const worked=Math.floor((WS-st.secs)/60);
+    if(worked>=1){
+      secs=st.secs;phase=st.phase;elapsedBeforePause=st.elapsed||0;
+      document.getElementById('pnote').value=st.note||'';
+      ring();btns(false,true);
+      document.getElementById('banner-txt').textContent=`Tenías ${worked} min trabajados en "${st.note||'esta sesión'}". ¿Guardarlos?`;
+      document.getElementById('banner').classList.add('show');
+    }
+  }
+  clearState();
+}
+function bannerSave(){
+  const worked=Math.floor((WS-secs)/60)+elapsedBeforePause;
+  const note=document.getElementById('pnote').value.trim()||'Sesión de dibujo';
+  const arr=loadS();
+  arr.unshift({id:Date.now(),date:today(),mins:Math.max(worked,1),note:note+' (parcial)',pomo:true,partial:true});
+  saveS(arr);render();
+  document.getElementById('banner').classList.remove('show');
+}
+function bannerDismiss(){document.getElementById('banner').classList.remove('show');tReset();}
+
+function addTopic(){
+  const inp=document.getElementById('topic-inp');const v=inp.value.trim();if(!v)return;
+  const arr=loadTopics();if(!arr.includes(v)){arr.push(v);saveTopics(arr);}
+  inp.value='';renderTopics();
+}
+function deleteTopic(t){saveTopics(loadTopics().filter(x=>x!==t));renderTopics();}
+function selectTopic(t){document.getElementById('pnote').value=t;}
+function renderTopics(){
+  const arr=loadTopics();const el=document.getElementById('chips');
+  if(!arr.length){el.innerHTML='<span class="no-topics">No hay temas guardados</span>';return;}
+  el.innerHTML=arr.map(t=>`<div class="chip" onclick="selectTopic('${t.replace(/'/g,"\\'")}')">
+    ${t}<span class="x" onclick="event.stopPropagation();deleteTopic('${t.replace(/'/g,"\\'")}')">✕</span></div>`).join('');
+}
+
+function addManual(){
+  const h=parseInt(document.getElementById('ih').value)||0;
+  const m=parseInt(document.getElementById('im').value)||0;
+  const mins=h*60+m;if(mins<=0){alert('Ingresá al menos 1 minuto.');return;}
+  const date=document.getElementById('id').value||today();
+  const note=document.getElementById('in').value.trim();
+  const arr=loadS();
+  arr.unshift({id:Date.now(),date,mins,note,pomo:false,partial:false});
+  saveS(arr);
+  document.getElementById('ih').value=0;document.getElementById('im').value=30;document.getElementById('in').value='';
+  render();
+}
+function delSession(id){if(!confirm('¿Eliminar?'))return;saveS(loadS().filter(s=>s.id!==id));render();}
+
+function streak(sessions){
+  if(!sessions.length)return 0;
+  const dates=[...new Set(sessions.map(s=>s.date))].sort().reverse();
+  let st=1;
+  for(let i=0;i<dates.length-1;i++){
+    const d=Math.round((new Date(dates[i]+'T12:00:00')-new Date(dates[i+1]+'T12:00:00'))/86400000);
+    if(d===1)st++;else break;
+  }
+  const t0=new Date();t0.setHours(0,0,0,0);
+  const l=new Date(dates[0]+'T12:00:00');l.setHours(0,0,0,0);
+  return Math.round((t0-l)/86400000)>1?0:st;
+}
+
+const DAILY_GOAL_MINS = 8 * 60; // 8 horas fijas por día
+function fmtH(mins){const h=Math.floor(mins/60),m=mins%60;return h&&m?h+'h '+m+'m':h?h+'h':m+'m';}
+function render(){
+  const ss=loadS();
+  const tm=ss.reduce((a,s)=>a+s.mins,0);
+  const th=tm/60,pct=Math.min((th/GOAL)*100,100),rem=Math.max(GOAL-th,0);
+  const dl=daysleft(),dh=dl>0?rem/dl:0;
+  const dnh=Math.floor(dh),dnm=Math.round((dh-dnh)*60);
+  const neededStr=dl>0?(dnh>0&&dnm>0?dnh+'h '+dnm+'m':dnh>0?dnh+'h':dnm+'m'):'¡Meta!';
+  const st=streak(ss),tp=ss.filter(s=>s.date===today()&&s.pomo).length;
+  // today's minutes
+  const todayMins=ss.filter(s=>s.date===today()).reduce((a,s)=>a+s.mins,0);
+  const todayH=Math.floor(todayMins/60),todayM=todayMins%60;
+  const todayStr=todayH&&todayM?todayH+'h '+todayM+'m':todayH?todayH+'h':todayM?todayM+'m':'0m';
+  const dailyPct=Math.min((todayMins/DAILY_GOAL_MINS)*100,100);
+  document.getElementById('daily-bar').style.width=dailyPct.toFixed(0)+'%';
+  document.getElementById('daily-bar').style.background=dailyPct>=100?'#6abf7b':'var(--ac)';
+  document.getElementById('daily-label').textContent=todayStr+' / 8h';
+  document.getElementById('bar').style.width=pct.toFixed(1)+'%';
+  document.getElementById('pct').textContent=pct.toFixed(1)+'%';
+  const thH=Math.floor(th),thM=Math.round((th-thH)*60);
+  const thStr=thH&&thM?thH+'h '+thM+'m':thH?thH+'h':thM?thM+'m':'0m';
+  const remH=Math.floor(rem),remM=Math.round((rem-remH)*60);
+  const remStr=remH&&remM?remH+'h '+remM+'m':remH?remH+'h':remM?remM+'m':'0m';
+  document.getElementById('logged').textContent=thStr+' / 1000 hs';
+  const bg=document.getElementById('badge');
+  bg.textContent=st===1?'1 día seguido':st+' días seguidos';
+  bg.className='badge'+(st>0?' on':'');
+  document.getElementById('metrics').innerHTML=`
+    <div class="mc"><div class="l">Registradas</div><div class="v">${thStr}</div></div>
+    <div class="mc"><div class="l">Restantes</div><div class="v">${remStr}</div></div>
+    <div class="mc"><div class="l">Días restantes</div><div class="v">${dl}</div></div>
+    <div class="mc"><div class="l">Necesitás/día</div><div class="v" style="font-size:17px">${neededStr}</div></div>`;
+  document.getElementById('ptoday').textContent=tp===1?'1 pomodoro hoy':tp+' pomodoros hoy';
+  document.getElementById('pdots').innerHTML=Array.from({length:Math.min(tp,10)},()=>'<div class="dot done"></div>').join('');
+  const list=document.getElementById('slist');
+  if(!ss.length){list.innerHTML='<div class="empty">No hay sesiones aún.</div>';return;}
+  list.innerHTML=ss.map(s=>{
+    const[y,mo,d]=s.date.split('-');
+    const tagCls=s.partial?'tag-x':s.pomo?'tag-p':'tag-m';
+    const tagTxt=s.partial?'parcial':s.pomo?'pomodoro':'manual';
+    return`<div class="si"><div><div class="sdate">${d}/${mo}/${y}</div>${s.note?'<div class="snote">'+s.note+'</div>':''}</div><div class="sr"><span class="tag ${tagCls}">${tagTxt}</span><span class="sdur">${fmtm(s.mins)}</span><button class="bdel" onclick="delSession(${s.id})">✕</button></div></div>`;
+  }).join('');
+}
+
+// ─── INIT ─────────────────────────────────────────────
+ring();renderTopics();checkSavedState();render();
+
+// Auto-restore session if token cached (best effort)
+window.addEventListener('load', () => {
+  const cachedName = localStorage.getItem('gUserName');
+  if (cachedName) {
+    userName = cachedName;
+    setSyncStatus('', '🔄 Reconectando...', 'Tocá "Conectar Drive" para reconectar');
+  }
+});
+</script>
+</body>
+</html>
