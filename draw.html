@@ -575,18 +575,40 @@ function streak(sessions){
   return Math.round((t0-l)/86400000)>1?0:st;
 }
 
-const DAILY_GOAL_MINS = 8 * 60; // 8 horas fijas por día
+const DAILY_GOAL_MINS = 8 * 60;
+
+// "Hoy" = desde las 12:00 del día actual hasta las 11:59 del día siguiente
+function todayKey(){
+  const now=new Date();
+  // Si son antes del mediodía, el "día" empezó ayer a las 12pm
+  if(now.getHours()<12){
+    const y=new Date(now);y.setDate(y.getDate()-1);
+    return y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
+  }
+  return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+}
+// Sessions belonging to current "day" (noon-to-noon window)
+function todaySessions(ss){
+  const now=new Date();
+  const noonToday=new Date(now);noonToday.setHours(12,0,0,0);
+  const noonYest=new Date(noonToday);noonYest.setDate(noonYest.getDate()-1);
+  const cutStart=now<noonToday?noonYest:noonToday;
+  const cutEnd=new Date(cutStart);cutEnd.setDate(cutEnd.getDate()+1);
+  return ss.filter(s=>{
+    const d=new Date(s.date+'T12:00:00');
+    return d>=cutStart&&d<cutEnd;
+  });
+}
+
 function fmtH(mins){const h=Math.floor(mins/60),m=mins%60;return h&&m?h+'h '+m+'m':h?h+'h':m+'m';}
 function render(){
   const ss=loadS();
   const tm=ss.reduce((a,s)=>a+s.mins,0);
   const th=tm/60,pct=Math.min((th/GOAL)*100,100),rem=Math.max(GOAL-th,0);
-  const dl=daysleft(),dh=dl>0?rem/dl:0;
-  const dnh=Math.floor(dh),dnm=Math.round((dh-dnh)*60);
-  const neededStr=dl>0?(dnh>0&&dnm>0?dnh+'h '+dnm+'m':dnh>0?dnh+'h':dnm+'m'):'¡Meta!';
+  const dl=daysleft();
   const st=streak(ss),tp=ss.filter(s=>s.date===today()&&s.pomo).length;
-  // today's minutes
-  const todayMins=ss.filter(s=>s.date===today()).reduce((a,s)=>a+s.mins,0);
+  // daily window (noon-to-noon)
+  const todayMins=todaySessions(ss).reduce((a,s)=>a+s.mins,0);
   const todayH=Math.floor(todayMins/60),todayM=todayMins%60;
   const todayStr=todayH&&todayM?todayH+'h '+todayM+'m':todayH?todayH+'h':todayM?todayM+'m':'0m';
   const dailyPct=Math.min((todayMins/DAILY_GOAL_MINS)*100,100);
@@ -606,8 +628,7 @@ function render(){
   document.getElementById('metrics').innerHTML=`
     <div class="mc"><div class="l">Registradas</div><div class="v">${thStr}</div></div>
     <div class="mc"><div class="l">Restantes</div><div class="v">${remStr}</div></div>
-    <div class="mc"><div class="l">Días restantes</div><div class="v">${dl}</div></div>
-    <div class="mc"><div class="l">Necesitás/día</div><div class="v" style="font-size:17px">${neededStr}</div></div>`;
+    <div class="mc"><div class="l">Días restantes</div><div class="v">${dl}</div></div>`;
   document.getElementById('ptoday').textContent=tp===1?'1 pomodoro hoy':tp+' pomodoros hoy';
   document.getElementById('pdots').innerHTML=Array.from({length:Math.min(tp,10)},()=>'<div class="dot done"></div>').join('');
   const list=document.getElementById('slist');
